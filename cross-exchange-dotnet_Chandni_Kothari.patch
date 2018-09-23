@@ -1,0 +1,576 @@
+From 89b073e52ed8c211e395380b0c288739ffddc60a Mon Sep 17 00:00:00 2001
+From: chandni-kothari <chandni0422@gmail.com>
+Date: Sun, 23 Sep 2018 17:34:43 +0530
+Subject: [PATCH] My submission
+XOV:v2
+
+---
+ .gitignore                                         |   0
+ CrossExchange.Tests/CrossExchange.Tests.csproj     |   0
+ CrossExchange.Tests/ShareControllerTests.cs        |   0
+ CrossExchange.Tests/TradeControllerTests.cs        | 112 +++++++++++++++++++++
+ CrossExchange.Tests/coverage.bat                   |   0
+ CrossExchange.sln                                  |   0
+ CrossExchange/Controller/PortfolioController.cs    |   0
+ CrossExchange/Controller/ShareController.cs        |   0
+ CrossExchange/Controller/TradeController.cs        | 102 ++++++++++++++++++-
+ CrossExchange/CrossExchange.csproj                 |   0
+ .../Exceptions/HttpStatusCodeException.cs          |   0
+ .../HttpStatusCodeExceptionMiddleware.cs           |   0
+ .../HttpStatusCodeExceptionMiddlewareExtensions.cs |   0
+ .../20180818121317_InitialCreate.Designer.cs       |   0
+ .../Migrations/20180818121317_InitialCreate.cs     |   0
+ .../Migrations/ExchangeContextModelSnapshot.cs     |   0
+ CrossExchange/Model/HourlyShareRate.cs             |   2 +
+ CrossExchange/Model/Portfolio.cs                   |   0
+ CrossExchange/Model/Trade.cs                       |   2 +
+ CrossExchange/Model/TradeModel.cs                  |   0
+ CrossExchange/Program.cs                           |   0
+ CrossExchange/Properties/launchSettings.json       |   2 +
+ CrossExchange/Repository/ExchangeContext.cs        |   0
+ CrossExchange/Repository/GenericRepository.cs      |   0
+ CrossExchange/Repository/IGenericRepository.cs     |   0
+ CrossExchange/Repository/IPortfolioRepository.cs   |   0
+ CrossExchange/Repository/IShareRepository.cs       |   0
+ CrossExchange/Repository/ITradeRepository.cs       |  14 ++-
+ CrossExchange/Repository/PortfolioRepository.cs    |   0
+ CrossExchange/Repository/ShareRepository.cs        |   0
+ CrossExchange/Repository/TradeRepository.cs        |  54 ++++++++++
+ CrossExchange/Startup.cs                           |   9 +-
+ CrossExchange/appsettings.Development.json         |   0
+ CrossExchange/appsettings.json                     |   0
+ Readme.txt                                         |   0
+ 35 files changed, 290 insertions(+), 7 deletions(-)
+ mode change 100755 => 100644 .gitignore
+ mode change 100755 => 100644 CrossExchange.Tests/CrossExchange.Tests.csproj
+ mode change 100755 => 100644 CrossExchange.Tests/ShareControllerTests.cs
+ create mode 100644 CrossExchange.Tests/TradeControllerTests.cs
+ mode change 100755 => 100644 CrossExchange.Tests/coverage.bat
+ mode change 100755 => 100644 CrossExchange.sln
+ mode change 100755 => 100644 CrossExchange/Controller/PortfolioController.cs
+ mode change 100755 => 100644 CrossExchange/Controller/ShareController.cs
+ mode change 100755 => 100644 CrossExchange/Controller/TradeController.cs
+ mode change 100755 => 100644 CrossExchange/CrossExchange.csproj
+ mode change 100755 => 100644 CrossExchange/Exceptions/HttpStatusCodeException.cs
+ mode change 100755 => 100644 CrossExchange/Exceptions/HttpStatusCodeExceptionMiddleware.cs
+ mode change 100755 => 100644 CrossExchange/Exceptions/HttpStatusCodeExceptionMiddlewareExtensions.cs
+ mode change 100755 => 100644 CrossExchange/Migrations/20180818121317_InitialCreate.Designer.cs
+ mode change 100755 => 100644 CrossExchange/Migrations/20180818121317_InitialCreate.cs
+ mode change 100755 => 100644 CrossExchange/Migrations/ExchangeContextModelSnapshot.cs
+ mode change 100755 => 100644 CrossExchange/Model/HourlyShareRate.cs
+ mode change 100755 => 100644 CrossExchange/Model/Portfolio.cs
+ mode change 100755 => 100644 CrossExchange/Model/Trade.cs
+ mode change 100755 => 100644 CrossExchange/Model/TradeModel.cs
+ mode change 100755 => 100644 CrossExchange/Program.cs
+ mode change 100755 => 100644 CrossExchange/Properties/launchSettings.json
+ mode change 100755 => 100644 CrossExchange/Repository/ExchangeContext.cs
+ mode change 100755 => 100644 CrossExchange/Repository/GenericRepository.cs
+ mode change 100755 => 100644 CrossExchange/Repository/IGenericRepository.cs
+ mode change 100755 => 100644 CrossExchange/Repository/IPortfolioRepository.cs
+ mode change 100755 => 100644 CrossExchange/Repository/IShareRepository.cs
+ mode change 100755 => 100644 CrossExchange/Repository/ITradeRepository.cs
+ mode change 100755 => 100644 CrossExchange/Repository/PortfolioRepository.cs
+ mode change 100755 => 100644 CrossExchange/Repository/ShareRepository.cs
+ mode change 100755 => 100644 CrossExchange/Repository/TradeRepository.cs
+ mode change 100755 => 100644 CrossExchange/Startup.cs
+ mode change 100755 => 100644 CrossExchange/appsettings.Development.json
+ mode change 100755 => 100644 CrossExchange/appsettings.json
+ mode change 100755 => 100644 Readme.txt
+
+diff --git a/.gitignore b/.gitignore
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange.Tests/CrossExchange.Tests.csproj b/CrossExchange.Tests/CrossExchange.Tests.csproj
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange.Tests/ShareControllerTests.cs b/CrossExchange.Tests/ShareControllerTests.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange.Tests/TradeControllerTests.cs b/CrossExchange.Tests/TradeControllerTests.cs
+new file mode 100644
+index 0000000..ee3b5e7
+--- /dev/null
++++ b/CrossExchange.Tests/TradeControllerTests.cs
+@@ -0,0 +1,112 @@
++using System;
++using System.Threading.Tasks;
++using CrossExchange.Controller;
++using Microsoft.AspNetCore.Mvc;
++using NUnit.Framework;
++using Moq;
++
++namespace CrossExchange.Tests
++{
++    public class TradeControllerTests
++    {
++        private readonly Mock<ITradeRepository> _tradeRepositoryMock = new Mock<ITradeRepository>();
++
++        private readonly TradeController _tradeController;
++
++        public TradeControllerTests()
++        {
++            _tradeController = new TradeController(_tradeRepositoryMock.Object);
++        }
++
++        [Test]
++        public async Task GET_GetBuyTradesByRecentRates()
++        {
++            // Arrange
++
++            // Act
++            var result = _tradeController.GetBuyTradesByRecentRates().Result;
++
++            // Assert
++            Assert.NotNull(result);
++            var createdResult = result as CreatedResult;
++            Assert.NotNull(createdResult);
++            Assert.AreEqual(201, createdResult.StatusCode);
++        }
++
++
++        [Test]
++        public async Task GET_CheckIfBuyTradeRegistered()
++        {
++            // Arrange
++
++            // Act
++            var result = _tradeController.CheckIfBuyTradeRegistered(1).Result;
++
++            // Assert
++            Assert.NotNull(result);
++            var createdResult = result as CreatedResult;
++            Assert.NotNull(createdResult);
++            Assert.AreEqual(201, createdResult.StatusCode);
++        }
++
++        [Test]
++        public async Task GET_CheckIfPortfolioOfUserRegistered()
++        {
++            // Arrange
++
++            // Act
++            var result = _tradeController.CheckIfPortfolioOfUserRegistered(1).Result;
++
++            // Assert
++            Assert.NotNull(result);
++            var createdResult = result as CreatedResult;
++            Assert.NotNull(createdResult);
++            Assert.AreEqual(201, createdResult.StatusCode);
++        }
++
++        [Test]
++        public async Task GET_CheckIfshareInPortfolio()
++        {
++            // Arrange
++
++            // Act
++            var result = _tradeController.CheckIfshareInPortfolio(1).Result;
++
++            // Assert
++            Assert.NotNull(result);
++            var createdResult = result as CreatedResult;
++            Assert.NotNull(createdResult);
++            Assert.AreEqual(201, createdResult.StatusCode);
++        }
++
++        [Test]
++        public async Task GET_GetSellTradesByRecentRates()
++        {
++            // Arrange
++
++            // Act
++            var result = _tradeController.GetSellTradesByRecentRates().Result;
++
++            // Assert
++            Assert.NotNull(result);
++            var createdResult = result as CreatedResult;
++            Assert.NotNull(createdResult);
++            Assert.AreEqual(201, createdResult.StatusCode);
++        }
++
++        [Test]
++        public async Task GET_GetNoOfShares()
++        {
++            // Arrange
++
++            // Act
++            var result = _tradeController.GetNoOfShares(1).Result;
++
++            // Assert
++            Assert.NotNull(result);
++            var createdResult = result as CreatedResult;
++            Assert.NotNull(createdResult);
++            Assert.AreEqual(201, createdResult.StatusCode);
++        }
++    }
++}
+diff --git a/CrossExchange.Tests/coverage.bat b/CrossExchange.Tests/coverage.bat
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange.sln b/CrossExchange.sln
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Controller/PortfolioController.cs b/CrossExchange/Controller/PortfolioController.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Controller/ShareController.cs b/CrossExchange/Controller/ShareController.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Controller/TradeController.cs b/CrossExchange/Controller/TradeController.cs
+old mode 100755
+new mode 100644
+index 73ef638..8c20908
+--- a/CrossExchange/Controller/TradeController.cs
++++ b/CrossExchange/Controller/TradeController.cs
+@@ -16,11 +16,9 @@ namespace CrossExchange.Controller
+         private ITradeRepository _tradeRepository { get; set; }
+         private IPortfolioRepository _portfolioRepository { get; set; }
+ 
+-        public TradeController(IShareRepository shareRepository, ITradeRepository tradeRepository, IPortfolioRepository portfolioRepository)
++        public TradeController(ITradeRepository tradeRepository)
+         {
+-            _shareRepository = shareRepository;
+             _tradeRepository = tradeRepository;
+-            _portfolioRepository = portfolioRepository;
+         }
+ 
+ 
+@@ -54,6 +52,102 @@ namespace CrossExchange.Controller
+         {
+             return Created("Trade", model);
+         }
+-        
++
++        [HttpGet("GetBuyTradesByRecentRates")]
++        public async Task<IActionResult> GetBuyTradesByRecentRates()
++        {
++            var trades = _tradeRepository.getBuyTradesByRecentRates().ToList();
++            return Ok(trades.ToList());
++        }
++
++        [HttpGet("{tradeId}")]
++        public async Task<IActionResult> CheckIfBuyTradeRegistered([FromRoute]int tradeId)
++        {
++            try
++            {
++                var checkVar = _tradeRepository.checkIfBuyTradeRegistered(tradeId);
++                if (checkVar)
++                {
++                    return Ok(true);
++                }
++                else
++                {
++                    return BadRequest("The trade is not registered.");
++                }
++            }
++            catch (Exception)
++            {
++                return BadRequest("The trade is not registered.");
++            }
++        }
++
++        [HttpGet("{portfolioId}")]
++        public async Task<IActionResult> CheckIfPortfolioOfUserRegistered([FromRoute]int portfolioId)
++        {
++            try
++            {
++                var checkVar = _tradeRepository.checkIfPortfolioOfUserRegistered(portfolioId);
++                if (checkVar)
++                {
++                    return Ok(true);
++                }
++                else
++                {
++                    return BadRequest("The Portfolio of the user is not registered.");
++                }
++            }
++            catch (Exception)
++            {
++                return BadRequest("The Portfolio of the user is not registered.");
++            }
++        }
++
++        [HttpGet("{tradeId}")]
++        public async Task<IActionResult> CheckIfshareInPortfolio([FromRoute]int tradeId)
++        {
++            try
++            {
++                var checkVar = _tradeRepository.checkIfshareInPortfolio(tradeId);
++                if (checkVar)
++                {
++                    return Ok(true);
++                }
++                else
++                {
++                    return BadRequest("The share should is not there in the portfolio of the customer.");
++                }
++            }
++            catch (Exception)
++            {
++                return BadRequest("The share should is not there in the portfolio of the customer.");
++            }
++        }
++        [HttpGet("GetSellTradesByRecentRates")]
++        public async Task<IActionResult> GetSellTradesByRecentRates()
++        {
++            var trades = _tradeRepository.getSellTradesByRecentRates();
++            return Ok(trades.ToList());
++        }
++
++        [HttpGet("{tradeId}")]
++        public async Task<IActionResult> GetNoOfShares([FromRoute]int tradeId)
++        {
++            try
++            {
++                var count = _tradeRepository.getNoOfShares(tradeId);
++                if (count > 0)
++                {
++                    return Ok(count);
++                }
++                else
++                {
++                    return BadRequest("The number of share not sufficient.");
++                }
++            }
++            catch (Exception)
++            {
++                return BadRequest("The number of share not sufficient.");
++            }
++        }
+     }
+ }
+diff --git a/CrossExchange/CrossExchange.csproj b/CrossExchange/CrossExchange.csproj
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Exceptions/HttpStatusCodeException.cs b/CrossExchange/Exceptions/HttpStatusCodeException.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Exceptions/HttpStatusCodeExceptionMiddleware.cs b/CrossExchange/Exceptions/HttpStatusCodeExceptionMiddleware.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Exceptions/HttpStatusCodeExceptionMiddlewareExtensions.cs b/CrossExchange/Exceptions/HttpStatusCodeExceptionMiddlewareExtensions.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Migrations/20180818121317_InitialCreate.Designer.cs b/CrossExchange/Migrations/20180818121317_InitialCreate.Designer.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Migrations/20180818121317_InitialCreate.cs b/CrossExchange/Migrations/20180818121317_InitialCreate.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Migrations/ExchangeContextModelSnapshot.cs b/CrossExchange/Migrations/ExchangeContextModelSnapshot.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Model/HourlyShareRate.cs b/CrossExchange/Model/HourlyShareRate.cs
+old mode 100755
+new mode 100644
+index 63d6dc4..f6c5b46
+--- a/CrossExchange/Model/HourlyShareRate.cs
++++ b/CrossExchange/Model/HourlyShareRate.cs
+@@ -15,5 +15,7 @@ namespace CrossExchange
+ 
+         [Required]
+         public decimal Rate { get; set; }
++
++        public int TradeId { get; set; }
+     }
+ }
+diff --git a/CrossExchange/Model/Portfolio.cs b/CrossExchange/Model/Portfolio.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Model/Trade.cs b/CrossExchange/Model/Trade.cs
+old mode 100755
+new mode 100644
+index fb64a6f..46f640b
+--- a/CrossExchange/Model/Trade.cs
++++ b/CrossExchange/Model/Trade.cs
+@@ -13,5 +13,7 @@
+         public int PortfolioId { get; set; }
+         
+         public string Action { get; set; }
++
++
+     }
+ }
+\ No newline at end of file
+diff --git a/CrossExchange/Model/TradeModel.cs b/CrossExchange/Model/TradeModel.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Program.cs b/CrossExchange/Program.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Properties/launchSettings.json b/CrossExchange/Properties/launchSettings.json
+old mode 100755
+new mode 100644
+index 114150f..965532d
+--- a/CrossExchange/Properties/launchSettings.json
++++ b/CrossExchange/Properties/launchSettings.json
+@@ -11,6 +11,7 @@
+     "IIS Express": {
+       "commandName": "IISExpress",
+       "launchBrowser": true,
++      "launchUrl": "api/Trade",
+       "environmentVariables": {
+         "ASPNETCORE_ENVIRONMENT": "Development"
+       }
+@@ -18,6 +19,7 @@
+     "CrossExchange": {
+       "commandName": "Project",
+       "launchBrowser": true,
++      "launchUrl": "api/Trade",
+       "environmentVariables": {
+         "ASPNETCORE_ENVIRONMENT": "Development"
+       },
+diff --git a/CrossExchange/Repository/ExchangeContext.cs b/CrossExchange/Repository/ExchangeContext.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Repository/GenericRepository.cs b/CrossExchange/Repository/GenericRepository.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Repository/IGenericRepository.cs b/CrossExchange/Repository/IGenericRepository.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Repository/IPortfolioRepository.cs b/CrossExchange/Repository/IPortfolioRepository.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Repository/IShareRepository.cs b/CrossExchange/Repository/IShareRepository.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Repository/ITradeRepository.cs b/CrossExchange/Repository/ITradeRepository.cs
+old mode 100755
+new mode 100644
+index 33780cd..5053686
+--- a/CrossExchange/Repository/ITradeRepository.cs
++++ b/CrossExchange/Repository/ITradeRepository.cs
+@@ -1,6 +1,18 @@
+-﻿namespace CrossExchange
++﻿using System.Linq;
++
++namespace CrossExchange
+ {
+     public interface ITradeRepository : IGenericRepository<Trade>
+     {
++        IQueryable<Trade> getBuyTradesByRecentRates();
++        bool checkIfBuyTradeRegistered(int tradeId);
++
++        bool checkIfPortfolioOfUserRegistered(int portfolioId);
++
++        bool checkIfshareInPortfolio(int tradeId);
++
++        IQueryable<Trade> getSellTradesByRecentRates();
++
++        int getNoOfShares(int tradeId);
+     }
+ }
+\ No newline at end of file
+diff --git a/CrossExchange/Repository/PortfolioRepository.cs b/CrossExchange/Repository/PortfolioRepository.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Repository/ShareRepository.cs b/CrossExchange/Repository/ShareRepository.cs
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/Repository/TradeRepository.cs b/CrossExchange/Repository/TradeRepository.cs
+old mode 100755
+new mode 100644
+index 5c4cdf2..1b4405d
+--- a/CrossExchange/Repository/TradeRepository.cs
++++ b/CrossExchange/Repository/TradeRepository.cs
+@@ -1,3 +1,6 @@
++using System.Collections.Generic;
++using System.Linq;
++
+ namespace CrossExchange
+ {
+     public class TradeRepository : GenericRepository<Trade>, ITradeRepository
+@@ -6,5 +9,56 @@ namespace CrossExchange
+         {
+             _dbContext = dbContext;
+         }
++
++        #region BUY
++
++        public IQueryable<Trade> getBuyTradesByRecentRates()
++        {
++            return _dbContext.Trades.Join(_dbContext.Shares, u => u.Id, uir => uir.TradeId,
++                (u, uir) => new { u, uir }).Where(x => x.u.Action.Contains("BUY")).OrderByDescending(x => x.uir.TimeStamp).Select(m => new Trade
++                {
++                    Id = m.u.Id,
++                    Price = m.uir.Rate,
++                    Symbol = m.uir.Symbol
++                });
++
++        }
++
++        public bool checkIfBuyTradeRegistered(int tradeId)
++        {
++            return _dbContext.Trades.Count(x => x.Id == tradeId && x.Action == "BUY") > 0;
++        }
++
++        public bool checkIfPortfolioOfUserRegistered(int portfolioId)
++        {
++            return _dbContext.Portfolios.Count(x => x.Id == portfolioId) > 0;
++        }
++
++        #endregion
++
++        #region SELL
++
++        public bool checkIfshareInPortfolio(int tradeId)
++        {
++            return _dbContext.Portfolios.Count(x => x.Trade.Count(y => y.Id == tradeId && y.Action == "SELL") > 0) > 0;
++        }
++
++        public IQueryable<Trade> getSellTradesByRecentRates()
++        {
++            return _dbContext.Trades.Join(_dbContext.Shares, u => u.Id, uir => uir.TradeId,
++                (u, uir) => new { u, uir }).Where(x => x.u.Action.Contains("SELL")).OrderByDescending(x => x.uir.TimeStamp).Select(m => new Trade
++                {
++                    Id = m.u.Id,
++                    Price = m.uir.Rate,
++                    Symbol = m.uir.Symbol
++                });
++        }
++
++        public int getNoOfShares(int tradeId)
++        {
++            return _dbContext.Trades.Count(x => x.NoOfShares > 0 && x.Action == "SELL" && x.Id == tradeId);
++        }
++
++        #endregion
+     }
+ }
+\ No newline at end of file
+diff --git a/CrossExchange/Startup.cs b/CrossExchange/Startup.cs
+old mode 100755
+new mode 100644
+index d2b553b..ef583bb
+--- a/CrossExchange/Startup.cs
++++ b/CrossExchange/Startup.cs
+@@ -39,9 +39,14 @@ namespace CrossExchange
+                 app.UseHttpStatusCodeExceptionMiddleware();
+                 app.UseExceptionHandler();
+             }
+-
++            app.UseMvc(routes =>
++            {
++                routes.MapRoute(
++                    name: "default",
++                    template: "api/{controller=Home}/{id?}");
++            });
++            app.UseDefaultFiles();
+             app.UseStaticFiles();
+-
+             app.UseMvc();
+         }
+     }
+diff --git a/CrossExchange/appsettings.Development.json b/CrossExchange/appsettings.Development.json
+old mode 100755
+new mode 100644
+diff --git a/CrossExchange/appsettings.json b/CrossExchange/appsettings.json
+old mode 100755
+new mode 100644
+diff --git a/Readme.txt b/Readme.txt
+old mode 100755
+new mode 100644
+-- 
+2.15.1.windows.2
+
